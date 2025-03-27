@@ -68,13 +68,7 @@ jobs:
           chmod a+x tools/generate_jks_linux_amd64
           tools/generate_jks_linux_amd64
 
-      - name: Replace key
-        env:
-          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
-          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
-          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
-        run: |
-          python tools/key_replace.py
+
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -121,14 +115,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Replace key
-        env:
-          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
-          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
-          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
-        run: |
-          python tools/key_replace.py
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -171,15 +157,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
-      - name: Replace key
-        env:
-          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
-          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
-          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
-        run: |
-          python tools/key_replace.py
-        shell: pwsh
 
       - name: Setup Inno Setup 6
         run: |-
@@ -224,14 +201,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
-      - name: Replace key
-        env:
-          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
-          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
-          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
-        run: |
-          python tools/key_replace.py
 
       - name: Setup Dependencies
         run: |
@@ -281,14 +250,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
-      - name: Replace key
-        env:
-          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
-          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
-          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
-        run: |
-          python tools/key_replace.py
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
