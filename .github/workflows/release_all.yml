@@ -77,7 +77,7 @@ jobs:
       - name: Release Apks
         uses: softprops/action-gh-release@v1
         with:
-          files: >
+          files: |
             build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_unknown.apk
             build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_armeabi-v7a.apk
             build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_arm64-v8a.apk
@@ -130,7 +130,7 @@ jobs:
       - name: Release Ipa
         uses: softprops/action-gh-release@v1
         with:
-          files: >
+          files: |
             AppRhyme_ios_unknown_${{ needs.get_version.outputs.app_version }}.ipa
           prerelease: false
           tag_name: ${{ github.event.inputs.tag_name }}
@@ -182,7 +182,7 @@ jobs:
       - name: Release exe Package
         uses: softprops/action-gh-release@v1
         with:
-          files: >
+          files: |
             dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_windows_${{ needs.get_version.outputs.app_version }}_x86-64.exe
           prerelease: false
           tag_name: ${{ github.event.inputs.tag_name }}
@@ -238,7 +238,7 @@ jobs:
       - name: Release Packages
         uses: softprops/action-gh-release@v1
         with:
-          files: >
+          files: |
             ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64.deb
             ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86_64.rpm
             ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64.AppImage
@@ -293,7 +293,7 @@ jobs:
       - name: Release Dmg Package
         uses: softprops/action-gh-release@v1
         with:
-          files: >
+          files: |
             ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_macos_unknown_${{ needs.get_version.outputs.app_version }}.dmg
           prerelease: false
           tag_name: ${{ github.event.inputs.tag_name }}
