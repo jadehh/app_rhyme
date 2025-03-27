@@ -62,9 +62,9 @@ class MusicListSelectionDialog extends StatelessWidget {
             },
             child: PlaylistListItem(
               playlist: playlists[index],
-              onTap: () {
-                Navigator.pop(context, playlists[index]);
-              },
+              // onTap: () {
+              //   Navigator.pop(context, playlists[index]);
+              // },
             ),
           ),
       ],

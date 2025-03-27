@@ -20,6 +20,9 @@
 sudo apt install libmpv-dev mpv
 ```
 
+### 修复
+- 修复保存歌单黑屏的bug
+
 ### 功能:
 - 移动设备视图
 - 卓面设备视图
