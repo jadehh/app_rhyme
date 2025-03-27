@@ -1,37 +1,8 @@
 name: Build All Packages
 on:
-  push:
-    tags:
-      - v[0-9]+.*
+  workflow_dispatch:
 
 jobs:
-  release:
-    name: ${{ matrix.os }} 创建Release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ "ubuntu-latest" ] #, "macos-latest", "windows-latest"
-    steps:
-      - name: 时区设置
-        uses: szenius/set-timezone@v1.0 # 设置执行环境的时区
-        with:
-          timezoneLinux: "Asia/Shanghai"
-      - name: 克隆代码
-        uses: actions/checkout@v3
-      - name: 创建发行版本
-        continue-on-error: true
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body_path: README.md
-          draft: false
-          prerelease: false
-
   get_version:
     runs-on: ubuntu-latest
     outputs:
@@ -68,7 +39,13 @@ jobs:
           chmod a+x tools/generate_jks_linux_amd64
           tools/generate_jks_linux_amd64
 
-
+      - name: Replace key
+        env:
+          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
+          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
+          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
+        run: |
+          python tools/key_replace.py
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -96,14 +73,33 @@ jobs:
           mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_arm64-v8a.apk
           mv build/app/outputs/flutter-apk/app-x86_64-release.apk build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_x86_64.apk
 
-      - name: Upload
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload APK (unknown)
+        uses: actions/upload-artifact@v4
         with:
-          files:
-            "build/app/outputs/flutter-apk/*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          name: AppRhyme_android_unknown_${{ needs.get_version.outputs.app_version }}
+          path: build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_unknown.apk
+          compression-level: 9
+
+      - name: Upload APK (armeabi-v7a)
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppRhyme_android_armeabi-v7a_${{ needs.get_version.outputs.app_version }}
+          path: build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_armeabi-v7a.apk
+          compression-level: 9
+
+      - name: Upload APK (arm64-v8a)
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppRhyme_android_arm64-v8a_${{ needs.get_version.outputs.app_version }}
+          path: build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_arm64-v8a.apk
+          compression-level: 9
+
+      - name: Upload APK (x86_64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppRhyme_android_x86_64_${{ needs.get_version.outputs.app_version }}
+          path: build/app/outputs/flutter-apk/AppRhyme_android_${{ needs.get_version.outputs.app_version }}_x86_64.apk
+          compression-level: 9
 
   build_ios_ipa:
     name: Build and Push Ios Ipa
@@ -114,6 +110,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Replace key
+        env:
+          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
+          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
+          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
+        run: |
+          python tools/key_replace.py
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -138,15 +142,12 @@ jobs:
           mv ./build/ios/iphoneos/Runner.app Payload
           zip -r -y AppRhyme_ios_unknown_${{ needs.get_version.outputs.app_version }}.ipa Payload/Runner.app
 
-      - name: Upload
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload AppImage Package
+        uses: actions/upload-artifact@v4
         with:
-          files:
-            AppRhyme_ios_unknown_${{ needs.get_version.outputs.app_version }}.ipa
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
+          name: AppRhyme_ios_unknown_${{ needs.get_version.outputs.app_version }}_ipa
+          path: AppRhyme_ios_unknown_${{ needs.get_version.outputs.app_version }}.ipa
+          compression-level: 9
 
   build_windows_setup_exe:
     name: Build and Push Windows Packages
@@ -157,6 +158,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Replace key
+        env:
+          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
+          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
+          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
+        run: |
+          python tools/key_replace.py
+        shell: pwsh
 
       - name: Setup Inno Setup 6
         run: |-
@@ -182,15 +192,12 @@ jobs:
         run: |
           mv ./dist/${{ needs.get_version.outputs.app_version }}/*.exe ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_windows_${{ needs.get_version.outputs.app_version }}_x86-64.exe
 
-      - name: Upload
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload exe Package
+        uses: actions/upload-artifact@v4
         with:
-          files:
-            "./dist/*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
+          name: AppRhyme_windows_${{ needs.get_version.outputs.app_version }}_x86-64_exe
+          path: dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_windows_${{ needs.get_version.outputs.app_version }}_x86-64.exe
+          compression-level: 9
 
   build_linux_packages:
     name: Build and Push Linux Packages
@@ -201,6 +208,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Replace key
+        env:
+          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
+          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
+          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
+        run: |
+          python tools/key_replace.py
 
       - name: Setup Dependencies
         run: |
@@ -231,15 +246,26 @@ jobs:
           mv ./dist/${{ needs.get_version.outputs.app_version }}/*.rpm ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86_64.rpm
           mv ./dist/${{ needs.get_version.outputs.app_version }}/*.AppImage ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64.AppImage
 
-      - name: Upload
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload deb Package
+        uses: actions/upload-artifact@v4
         with:
-          files:
-            "./dist/*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          name: AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64_deb
+          path: dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64.deb
+          compression-level: 9
 
+      - name: Upload rpm Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64_rpm
+          path: dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86_64.rpm
+          compression-level: 9
+
+      - name: Upload AppImage Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64_AppImage
+          path: dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_linux_${{ needs.get_version.outputs.app_version }}_x86-64.AppImage
+          compression-level: 9
 
   build_macos_package:
     name: Build and Push Macos Packages
@@ -250,6 +276,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Replace key
+        env:
+          SOME_SECRET_KEY: ${{ secrets.SOME_SECRET_KEY }}
+          SOME_REPLACE_KEY: ${{ secrets.SOME_REPLACE_KEY }}
+          SOME_REPLACE_FILE: ${{ secrets.SOME_REPLACE_FILE }}
+        run: |
+          python tools/key_replace.py
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -277,12 +311,9 @@ jobs:
         run: |
           mv ./dist/${{ needs.get_version.outputs.app_version }}/*.dmg ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_macos_unknown_${{ needs.get_version.outputs.app_version }}.dmg
 
-      - name: Upload
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload AppImage Package
+        uses: actions/upload-artifact@v4
         with:
-          files:
-            "./dist/*"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
+          name: AppRhyme_macos_unknown_${{ needs.get_version.outputs.app_version }}_dmg
+          path: ./dist/${{ needs.get_version.outputs.app_version }}/AppRhyme_macos_unknown_${{ needs.get_version.outputs.app_version }}.dmg
+          compression-level: 9
